@@ -154,14 +154,59 @@ public class Packet {
         public int identificationAndFlagsAndOffset;
         public short ttl;
         public TransportProtocol transportProtocol;
-        private short protocolNumber;
         public int checksum;
         public InetAddress srcAddr;
         public InetAddress dstAddr;
         public int options;
+        public int headerLength;
 
         private Ipv4Header(ByteBuffer byteBuffer) throws UnknownHostException {
-            
+            byte versionAndIhl = byteBuffer.get();
+            this.version = (byte) (versionAndIhl >> 4);
+            this.ihl = (byte) (versionAndIhl & 0x0F);
+            this.headerLength = this.ihl << 2;
+            this.dscp = BitUtil.getUnsignedByte(byteBuffer.get());
+            this.totalLength = BitUtil.getUnsignedShort(byteBuffer.getShort());
+            this.identificationAndFlagsAndOffset = byteBuffer.getInt();
+            this.ttl = BitUtil.getUnsignedByte(byteBuffer.get());
+            this.transportProtocol = TransportProtocol.getProtocol(BitUtil.getUnsignedByte(byteBuffer.get()));
+            this.checksum = BitUtil.getUnsignedShort(byteBuffer.getShort());
+
+            byte[] addrBytes = new byte[4];
+            byteBuffer.get(addrBytes, 0, 4);
+            this.srcAddr = InetAddress.getByAddress(addrBytes);
+            byteBuffer.get(addrBytes, 0, 4);
+            this.dstAddr = InetAddress.getByAddress(addrBytes);
+
+        }
+
+        public void buildHeader(ByteBuffer byteBuffer) {
+            byteBuffer.put((byte) (this.version << 4 | this.ihl));
+            byteBuffer.put((byte) this.dscp);
+            byteBuffer.putShort((short) this.totalLength);
+            byteBuffer.putInt(this.identificationAndFlagsAndOffset);
+            byteBuffer.put((byte) this.ttl);
+            byteBuffer.put((byte) this.transportProtocol.getProtocolNumber());
+            byteBuffer.putShort((short) this.checksum);
+            byteBuffer.put(this.srcAddr.getAddress());
+            byteBuffer.put(this.dstAddr.getAddress());
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder stringBuilder = new StringBuilder("Ipv4Header{");
+            stringBuilder.append("version=").append(version)
+                    .append(", IHL=").append(ihl)
+                    .append(", DSCP=").append(dscp)
+                    .append(", totalLength=").append(totalLength)
+                    .append(", identificationAndFlagsAndFragmentOffset=").append(identificationAndFlagsAndOffset)
+                    .append(", TTL=").append(ttl)
+                    .append(", protocol=").append(transportProtocol)
+                    .append(", checksum=").append(checksum)
+                    .append(", srcAddr=").append(srcAddr.getHostAddress())
+                    .append(", dstAddr=").append(dstAddr.getHostAddress());
+            stringBuilder.append('}');
+            return stringBuilder.toString();
         }
 
         private enum TransportProtocol {
