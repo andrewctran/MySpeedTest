@@ -9,7 +9,94 @@ import java.nio.ByteBuffer;
 public class Packet {
     public static final int IPV4_HEADER_SIZE = 20;
     public static final int TCP_HEADER_SIZE = 20;
-    public static final int UDP_HEADER_SIZE = 4;
+    public static final int UDP_HEADER_SIZE = 8;
+
+    public Ipv4Header ipv4Header;
+    public TcpHeader tcpHeader;
+    public UdpHeader udpHeader;
+    public ByteBuffer backup;
+
+    private boolean isTcp;
+    private boolean isUdp;
+    private int payloadSize;
+
+    public Packet(ByteBuffer byteBuffer) throws UnknownHostException {
+        this.ipv4Header = new Ipv4Header(byteBuffer);
+        if (ipv4Header.transportProtocol == Ipv4Header.TransportProtocol.TCP) {
+            this.isTcp = true;
+            tcpHeader = new TcpHeader(byteBuffer);
+        } else if (ipv4Header.transportProtocol == Ipv4Header.TransportProtocol.UDP) {
+            this.isUdp = true;
+            udpHeader = new UdpHeader(byteBuffer);
+        }
+        this.backup = byteBuffer;
+        this.payloadSize = backup.limit() - backup.position();
+    }
+
+    public boolean isTcp() {
+        return this.isTcp;
+    }
+
+    public boolean isUdp() {
+        return this.isUdp;
+    }
+
+    public void reverseRoute() {
+        InetAddress newSrcAddr = ipv4Header.dstAddr;
+        ipv4Header.dstAddr = ipv4Header.srcAddr;
+        ipv4Header.srcAddr = newSrcAddr;
+        if (isTcp) {
+            int newSrcPort = tcpHeader.dstPort;
+            tcpHeader.dstPort = tcpHeader.srcPort;
+            tcpHeader.srcPort = newSrcPort;
+        } else if (isUdp) {
+            int newSrcPort = udpHeader.dstPort;
+            udpHeader.dstPort = udpHeader.srcPort;
+            udpHeader.srcPort = newSrcPort;
+        }
+    }
+
+    public void setTcpBuffer(ByteBuffer byteBuffer, byte flags, long seqNum, long ackNum, int payloadSize) {
+        byteBuffer.position(0);
+        ipv4Header.buildHeader(byteBuffer);
+        tcpHeader.buildHeader(byteBuffer);
+        backup = byteBuffer;
+
+        byte offset = (byte) (TCP_HEADER_SIZE << 2);
+        int ipTotalLength = IPV4_HEADER_SIZE + TCP_HEADER_SIZE + payloadSize;
+
+        tcpHeader.flags = flags;
+        tcpHeader.seqNum = seqNum;
+        tcpHeader.ackNum = ackNum;
+        tcpHeader.offsetAndReserved = offset;
+        updateTcpChecksum(payloadSize);
+
+        ipv4Header.totalLength = ipTotalLength;
+        updateIpv4Checksum();
+
+        backup.put(IPV4_HEADER_SIZE + 13, flags);
+        backup.putInt(IPV4_HEADER_SIZE + 4, (int) seqNum);
+        backup.putInt(IPV4_HEADER_SIZE + 8, (int) ackNum);
+        backup.put(IPV4_HEADER_SIZE + 12, offset);
+        backup.putShort(2, (short) ipTotalLength);
+    }
+
+    private void updateTcpChecksum(int payloadSize) {
+        int sum = 0;
+        int tcpLength = payloadSize + TCP_HEADER_SIZE;
+        
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder("Packet{");
+        stringBuilder.append("IPv4Header=").append(ipv4Header);
+        if (isTcp) stringBuilder.append(", tcpHeader=").append(tcpHeader);
+        else if (isUdp) stringBuilder.append("u, dpHeader=").append(udpHeader);
+        stringBuilder.append(", payloadSize=").append(payloadSize);
+        stringBuilder.append("}");
+        return stringBuilder.toString();
+    }
 
     public static class TcpHeader {
         public static final int FIN = 0x01;
