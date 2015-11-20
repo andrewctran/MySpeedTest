@@ -81,6 +81,25 @@ public class Packet {
         backup.putShort(2, (short) ipTotalLength);
     }
 
+    public void setUdpBuffer(ByteBuffer byteBuffer, int payloadSize) {
+        byteBuffer.position(0);
+        ipv4Header.buildHeader(byteBuffer);
+        udpHeader.buildHeader(byteBuffer);
+        backup = byteBuffer;
+
+        int udpLength = UDP_HEADER_SIZE + payloadSize;
+        backup.putShort(IPV4_HEADER_SIZE + 4, (short) udpLength);
+        udpHeader.length = udpLength;
+
+        backup.putShort(IPV4_HEADER_SIZE + 6, (short) 0);
+        udpHeader.checksum = 0;
+
+        int ipLength = IPV4_HEADER_SIZE + udpLength;
+        backup.putShort(2, (short) ipLength);
+        ipv4Header.totalLength = ipLength;
+        updateIpv4Checksum();
+    }
+
     private void updateTcpChecksum(int payloadSize) {
         int sum = 0;
         int tcpLength = payloadSize + TCP_HEADER_SIZE;
