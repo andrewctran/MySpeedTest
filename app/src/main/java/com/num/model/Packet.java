@@ -84,7 +84,51 @@ public class Packet {
     private void updateTcpChecksum(int payloadSize) {
         int sum = 0;
         int tcpLength = payloadSize + TCP_HEADER_SIZE;
-        
+
+        // Calculate pseudo-header
+        // http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
+        ByteBuffer byteBuffer = ByteBuffer.wrap(ipv4Header.srcAddr.getAddress());
+        sum += BitUtil.getUnsignedShort(byteBuffer.getShort()) + BitUtil.getUnsignedShort(byteBuffer.getShort());
+        byteBuffer.wrap(ipv4Header.dstAddr.getAddress());
+        sum += BitUtil.getUnsignedShort(byteBuffer.getShort()) + BitUtil.getUnsignedShort(byteBuffer.getShort());
+        sum += Ipv4Header.TransportProtocol.TCP.getProtocolNumber() + tcpLength;
+        byteBuffer = backup.duplicate();
+
+        // Clear stale checksum
+        byteBuffer.putShort(IPV4_HEADER_SIZE + 16, (short) 0);
+
+        // Calculate segment checksum
+        byteBuffer.position(IPV4_HEADER_SIZE);
+        while (tcpLength > 1) {
+            sum += BitUtil.getUnsignedShort(byteBuffer.getShort());
+            tcpLength -= 2;
+        }
+        if (tcpLength > 0) sum += BitUtil.getUnsignedByte(byteBuffer.get()) << 8;
+        while (sum >> 16 > 0) sum = (sum & 0xFFFF) + (sum >> 16);
+        sum = ~sum;
+        tcpHeader.checksum = sum;
+        backup.putShort(IPV4_HEADER_SIZE + 16, (short) sum);
+    }
+
+    private void updateIpv4Checksum() {
+        int sum = 0;
+
+        ByteBuffer byteBuffer = backup.duplicate();
+        byteBuffer.position(0);
+        // Clear stale checksum
+        byteBuffer.putShort(10, (short) 0);
+
+        int headerLength = ipv4Header.headerLength;
+        while (headerLength > 0) {
+            sum += BitUtil.getUnsignedShort(byteBuffer.getShort());
+            headerLength -= 2;
+        }
+        while (sum >> 16 > 0) {
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        }
+        sum = ~sum;
+        ipv4Header.checksum = sum;
+        backup.putShort(10, (short) sum);
     }
 
     @Override
