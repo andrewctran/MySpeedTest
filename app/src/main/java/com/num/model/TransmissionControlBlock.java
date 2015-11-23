@@ -11,13 +11,13 @@ import java.util.Map;
 
 public class TransmissionControlBlock {
     private static final int MAX_CACHE_SIZE = 50;
-    private static LruCache<String, TransmissionControlBlock> cache =
-            new SynchronizedLruCache<String, TransmissionControlBlock>(MAX_CACHE_SIZE, new SynchronizedLruCache.RemovalCallback() {
-                @Override
-                public void remove(Map.Entry<String, TransmissionControlBlock> eldest) {
-                    eldest.getValue().closeChannel();
-                }
-            }
+//    private static LruCache<String, TransmissionControlBlock> cache =
+//            new SynchronizedLruCache<String, TransmissionControlBlock>(MAX_CACHE_SIZE, new SynchronizedLruCache.RemovalCallback() {
+//                @Override
+//                public void remove(Map.Entry<String, TransmissionControlBlock> eldest) {
+//                    eldest.getValue().closeChannel();
+//                }
+//            };
     public String ipPort;
     public long thisSeqNum;
     public long otherSeqNum;
