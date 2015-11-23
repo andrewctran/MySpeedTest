@@ -60,6 +60,8 @@ public class LocalVpnService extends VpnService {
             tcpSelector = Selector.open();
             udpSelector = Selector.open();
             networkIn = new ConcurrentLinkedQueue<>();
+            tcpOut = new ConcurrentLinkedQueue<>();
+            udpOut = new ConcurrentLinkedQueue<>();
 
             // TODO: submit tasks to ExecutorService
         } catch (IOException e) {
