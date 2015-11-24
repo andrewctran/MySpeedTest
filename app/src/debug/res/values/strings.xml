@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MST Dev</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_throughput">Speed Test</string>
+    <string name="title_activity_throughput_history">Speed Test History</string>
+    <string name="title_activity_latency">Latency Test</string>
+    <string name="title_activity_data_usage">Data Usage</string>
+    <string name="title_activity_traceroute">Traceroute</string>
+    <string name="title_activity_application_detail">Application Detail</string>
+    <string name="scheduler_priority">2</string>
+    <string name="title_activity_censorship">Censorship</string>
+    <string name="title_activity_latency_detail">Latency Detail</string>
+    <string name="title_activity_about_us">About Us</string>
+    <string name="title_activity_terms_and_conditions">Terms and Conditions</string>
+    <string name="title_activity_data_cap">Data Cap</string>
+
+    <string name="loading">PythonAPK running...</string>
+</resources>
