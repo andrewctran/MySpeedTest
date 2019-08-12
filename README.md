@@ -1,25 +1,25 @@
-My Speed Test
+Babbage
 =============
 ## Overview
-My Speed Test is an Android application aimed to perform network measurements on mobile devices.
+Babbage is an Android application aimed to perform network measurements on mobile devices.
 
 ## Installation
 1. Install Android Studio.
 2. Select Import Project from File menu.
-3. Import My Speed Test.
+3. Import Babbage.
 4. Install SDK 21 or above.
-5. Run My Speed Test.
+5. Run Babbage.
 
 ## Features
 ### Ping
 Ping tests are performed by querying the list of targets from `ruggles.gtnoise.net/values` and then executing ping commands to each target asynchronously. If the server is unreachable for some reason, default list of targets are hard coded into the application so that the application can function on its own.
 ### Traceroute
-Traceroute also functions similarly to ping, except when the user manually performs the test. Traceroute allows the user to choose their own destination and the type of test they want to perform (UDP or ICMP). However, automatic traceroute will query the list of targets from `ruggles.gtnoise.net/values` and execute traceroute command to each target asynchronously. Since most phones do not come with traceroute pre-installed, My Speed Test included an executable compiled to work with ARM processor phones.
+Traceroute also functions similarly to ping, except when the user manually performs the test. Traceroute allows the user to choose their own destination and the type of test they want to perform (UDP or ICMP). However, automatic traceroute will query the list of targets from `ruggles.gtnoise.net/values` and execute traceroute command to each target asynchronously. Since most phones do not come with traceroute pre-installed, Babbage included an executable compiled to work with ARM processor phones.
 ### Data Usage
-My Speed Test keeps track of cumulative data usage for a month instead of getting reset everytime the phone is rebooted. To do this, the application uses a database to store the usage data so that it can persist through reboots. On the first day of each month, the database will be cleared and a new cycle will begin.
+Babbage keeps track of cumulative data usage for a month instead of getting reset everytime the phone is rebooted. To do this, the application uses a database to store the usage data so that it can persist through reboots. On the first day of each month, the database will be cleared and a new cycle will begin.
 ## Structure
 ### Model
-Models hold information about specific objects that are needed by My Speed Test. However, these objects only perform minimal functions to pass data between the activities or between the client and the server. Most of the application's functionalities are deferred to the controllers.
+Models hold information about specific objects that are needed by Babbage. However, these objects only perform minimal functions to pass data between the activities or between the client and the server. Most of the application's functionalities are deferred to the controllers.
 
 ### View
 Views are classes needed to display information to the user. All the user interface actions should be handled here. The preferred way of communicating between the controller classes and the view classes is through message handlers. Each activity should define its own message handler and pass it into a controller class.
